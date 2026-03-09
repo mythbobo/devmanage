@@ -1,0 +1,40 @@
+{
+  "name": "devmanage",
+  "version": "1.0.0",
+  "description": "基于 UniApp 的微信小程序设备管理系统",
+  "main": "main.ts",
+  "scripts": {
+    "dev:mp-weixin": "uni -p mp-weixin",
+    "build:mp-weixin": "uni build -p mp-weixin",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
+    "lint:fix": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
+    "type-check": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@dcloudio/uni-app": "3.0.0-alpha-5000220260306001",
+    "@dcloudio/uni-components": "3.0.0-alpha-5000220260306001",
+    "@dcloudio/uni-h5": "3.0.0-alpha-5000220260306001",
+    "@dcloudio/uni-mp-weixin": "3.0.0-alpha-5000220260306001",
+    "pinia": "^2.2.0",
+    "pinia-plugin-persistedstate": "^3.1.1",
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {
+    "@dcloudio/types": "^3.4.0",
+    "@dcloudio/uni-automator": "3.0.0-alpha-5000220260306001",
+    "@dcloudio/uni-cli-shared": "3.0.0-alpha-5000220260306001",
+    "@dcloudio/vite-plugin-uni": "3.0.0-alpha-5000220260306001",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.9.0",
+    "@vue/compiler-sfc": "^3.4.0",
+    "@vue/eslint-config-prettier": "^9.0.0",
+    "@vue/eslint-config-typescript": "^12.0.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-vue": "^9.24.0",
+    "prettier": "^3.2.0",
+    "sass": "^1.72.0",
+    "typescript": "^5.4.0",
+    "vite": "5.2.0",
+    "vue-tsc": "^2.0.0"
+  }
+}
