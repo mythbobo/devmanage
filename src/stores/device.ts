@@ -9,6 +9,8 @@ export const useDeviceStore = defineStore('device', () => {
   const currentPage = ref(1);
   const pageSize = ref(10);
   const loading = ref(false);
+  const keyword = ref('');
+  const filterStatus = ref<IDeviceStatus | undefined>(undefined);
   const hasMore = computed(() => deviceList.value.length < totalCount.value);
 
   async function loadDevices(refresh = false) {
@@ -20,6 +22,8 @@ export const useDeviceStore = defineStore('device', () => {
       const request = {
         page: refresh ? 1 : currentPage.value,
         pageSize: pageSize.value,
+        keyword: keyword.value || undefined,
+        status: filterStatus.value,
       };
 
       const response = await fetchDeviceList(request);
@@ -31,7 +35,7 @@ export const useDeviceStore = defineStore('device', () => {
       }
 
       totalCount.value = response.total;
-      currentPage.value = response.page;
+      currentPage.value = refresh ? 1 : currentPage.value;
     } catch (error) {
       console.error('加载设备列表失败', error);
       uni.showToast({
@@ -43,17 +47,18 @@ export const useDeviceStore = defineStore('device', () => {
     }
   }
 
-  function searchDevices(keyword: string) {
-    if (!keyword) return;
+  function searchDevices(newKeyword: string) {
+    keyword.value = newKeyword;
     currentPage.value = 1;
     deviceList.value = [];
-    return loadDevices();
+    return loadDevices(true);
   }
 
-  function filterDevices(_filterStatus: IDeviceStatus | undefined) {
+  function filterDevices(status: IDeviceStatus | undefined) {
+    filterStatus.value = status;
     currentPage.value = 1;
     deviceList.value = [];
-    return loadDevices();
+    return loadDevices(true);
   }
 
   function refreshDevices() {
@@ -67,17 +72,25 @@ export const useDeviceStore = defineStore('device', () => {
     return loadDevices();
   }
 
+  // 设置初始筛选状态（从URL参数）
+  function setInitialFilter(status: IDeviceStatus | undefined) {
+    filterStatus.value = status;
+  }
+
   return {
     deviceList,
     totalCount,
     currentPage,
     pageSize,
     loading,
+    keyword,
+    filterStatus,
     hasMore,
     loadDevices,
     searchDevices,
     filterDevices,
     refreshDevices,
     loadMore,
+    setInitialFilter,
   };
 });

@@ -1,16 +1,34 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
+import { onLoad } from '@dcloudio/uni-app';
 import { useDeviceStore } from '@/stores/device';
 import { IDeviceStatus } from '@/types/device';
 import type { IDeviceInfo } from '@/types/device';
+import { getDeviceStatusText, getDeviceStatusColor } from '@/utils/device';
 
 const deviceStore = useDeviceStore();
 
 const searchText = ref('');
 const currentStatus = ref<IDeviceStatus | undefined>(undefined);
+let searchTimer: ReturnType<typeof setTimeout> | null = null;
+
+onLoad((options) => {
+  // 从URL参数中获取筛选状态
+  if (options?.status) {
+    currentStatus.value = options.status as IDeviceStatus;
+    deviceStore.setInitialFilter(currentStatus.value);
+  }
+});
 
 onMounted(() => {
   deviceStore.loadDevices(true);
+});
+
+onUnmounted(() => {
+  // 清理定时器
+  if (searchTimer) {
+    clearTimeout(searchTimer);
+  }
 });
 
 function handleRefresh() {
@@ -21,33 +39,27 @@ function handleLoadMore() {
   deviceStore.loadMore();
 }
 
-function handleSearch() {
-  deviceStore.searchDevices(searchText.value);
+// 防抖搜索
+function handleSearchInput() {
+  // 清除之前的定时器
+  if (searchTimer) {
+    clearTimeout(searchTimer);
+  }
+  // 设置新的定时器，300ms后执行搜索
+  searchTimer = setTimeout(() => {
+    deviceStore.searchDevices(searchText.value);
+  }, 300);
+}
+
+// 清除搜索
+function clearSearch() {
+  searchText.value = '';
+  deviceStore.searchDevices('');
 }
 
 function handleFilter(status?: IDeviceStatus) {
   currentStatus.value = status;
   deviceStore.filterDevices(status);
-}
-
-function getStatusText(status: IDeviceStatus): string {
-  const statusMap: Record<string, string> = {
-    online: '在线',
-    offline: '离线',
-    maintenance: '维护中',
-    error: '故障',
-  };
-  return statusMap[status] || '未知';
-}
-
-function getStatusColor(status: IDeviceStatus): string {
-  const colorMap: Record<string, string> = {
-    online: '#4cd964',
-    offline: '#999',
-    maintenance: '#f0ad4e',
-    error: '#dd524d',
-  };
-  return colorMap[status] || '#999';
 }
 
 function handleDeviceClick(device: IDeviceInfo) {
@@ -60,12 +72,20 @@ function handleDeviceClick(device: IDeviceInfo) {
 <template>
   <view class="device-list-container">
     <view class="search-bar">
-      <input
-        class="search-input"
-        placeholder="搜索设备..."
-        :value="searchText"
-        @input="handleSearch"
-      />
+      <view class="search-input-wrapper">
+        <text class="search-icon">🔍</text>
+        <input
+          class="search-input"
+          placeholder="搜索设备名称、编号..."
+          v-model="searchText"
+          @input="handleSearchInput"
+          confirm-type="search"
+          @confirm="handleSearchInput"
+        />
+        <view v-if="searchText" class="clear-btn" @click="clearSearch">
+          <text class="clear-icon">✕</text>
+        </view>
+      </view>
     </view>
 
     <view class="filter-bar">
@@ -126,8 +146,8 @@ function handleDeviceClick(device: IDeviceInfo) {
       >
         <view class="device-header">
           <text class="device-name">{{ device.name }}</text>
-          <view class="device-status" :style="{ backgroundColor: getStatusColor(device.status) }">
-            <text class="status-text">{{ getStatusText(device.status) }}</text>
+          <view class="device-status" :style="{ backgroundColor: getDeviceStatusColor(device.status) }">
+            <text class="status-text">{{ getDeviceStatusText(device.status) }}</text>
           </view>
         </view>
         <view class="device-info">
@@ -163,14 +183,40 @@ function handleDeviceClick(device: IDeviceInfo) {
   padding: $uni-spacing-col-base;
   background-color: #fff;
 
-  .search-input {
-    width: 100%;
-    height: 72rpx;
-    padding: 0 $uni-spacing-row-base;
-    border: 1px solid $uni-border-color;
-    border-radius: $uni-radius-lg;
+  .search-input-wrapper {
+    display: flex;
+    align-items: center;
     background-color: #f5f5f5;
-    font-size: $uni-font-size-base;
+    border-radius: $uni-radius-lg;
+    padding: 0 $uni-spacing-row-base;
+    height: 72rpx;
+
+    .search-icon {
+      font-size: 28rpx;
+      margin-right: $uni-spacing-row-sm;
+      color: $uni-text-color-grey;
+    }
+
+    .search-input {
+      flex: 1;
+      height: 100%;
+      font-size: $uni-font-size-base;
+      background: transparent;
+      border: none;
+
+      &::placeholder {
+        color: $uni-text-color-placeholder;
+      }
+    }
+
+    .clear-btn {
+      padding: $uni-spacing-row-sm;
+
+      .clear-icon {
+        font-size: 24rpx;
+        color: $uni-text-color-grey;
+      }
+    }
   }
 }
 

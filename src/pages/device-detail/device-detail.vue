@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
-import { IDeviceStatus } from '@/types/device';
 import type { IDeviceDetail, IMaintenanceRecord, IAlertRecord } from '@/types/device';
 import { fetchDeviceDetail, fetchMaintenanceRecords, fetchAlertRecords } from '@/services/device';
+import {
+  getDeviceStatusText,
+  getDeviceStatusColor,
+  getAlertLevelColor,
+  getAlertLevelText,
+  formatRuntime,
+} from '@/utils/device';
 
 const deviceId = ref('');
 const deviceDetail = ref<IDeviceDetail | null>(null);
@@ -44,55 +50,6 @@ async function loadDeviceDetail() {
   }
 }
 
-function getStatusText(status: IDeviceStatus): string {
-  const statusMap: Record<IDeviceStatus, string> = {
-    [IDeviceStatus.Online]: '在线',
-    [IDeviceStatus.Offline]: '离线',
-    [IDeviceStatus.Maintenance]: '维护中',
-    [IDeviceStatus.Error]: '故障',
-  };
-  return statusMap[status] || '未知';
-}
-
-function getStatusColor(status: IDeviceStatus): string {
-  const colorMap: Record<IDeviceStatus, string> = {
-    [IDeviceStatus.Online]: '#4cd964',
-    [IDeviceStatus.Offline]: '#999',
-    [IDeviceStatus.Maintenance]: '#f0ad4e',
-    [IDeviceStatus.Error]: '#dd524d',
-  };
-  return colorMap[status] || '#999';
-}
-
-function getAlertLevelColor(level: string): string {
-  const colorMap: Record<string, string> = {
-    low: '#f0ad4e',
-    medium: '#ff9800',
-    high: '#ff5722',
-    critical: '#dd524d',
-  };
-  return colorMap[level] || '#999';
-}
-
-function getAlertLevelText(level: string): string {
-  const textMap: Record<string, string> = {
-    low: '低',
-    medium: '中',
-    high: '高',
-    critical: '紧急',
-  };
-  return textMap[level] || level;
-}
-
-function formatRuntime(hours: number): string {
-  const days = Math.floor(hours / 24);
-  const remainingHours = hours % 24;
-  if (days > 0) {
-    return `${days}天${remainingHours}小时`;
-  }
-  return `${hours}小时`;
-}
-
 function goBack() {
   uni.navigateBack();
 }
@@ -121,9 +78,9 @@ function goBack() {
           <text class="device-name">{{ deviceDetail.name }}</text>
           <view
             class="device-status"
-            :style="{ backgroundColor: getStatusColor(deviceDetail.status) }"
+            :style="{ backgroundColor: getDeviceStatusColor(deviceDetail.status) }"
           >
-            <text class="status-text">{{ getStatusText(deviceDetail.status) }}</text>
+            <text class="status-text">{{ getDeviceStatusText(deviceDetail.status) }}</text>
           </view>
         </view>
         <view class="device-code">编号: {{ deviceDetail.code }}</view>

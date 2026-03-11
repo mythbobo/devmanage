@@ -1,38 +1,20 @@
 <script setup lang="ts">
 import type { IDeviceInfo, IDeviceStatus } from '@/types/device';
+import { getDeviceStatusText, getDeviceStatusColor } from '@/utils/device';
 
 interface Props {
   device: IDeviceInfo;
 }
 
 defineProps<Props>();
-function getStatusText(status: IDeviceStatus): string {
-  const statusMap: Record<IDeviceStatus, string> = {
-    online: '在线',
-    offline: '离线',
-    maintenance: '维护中',
-    error: '故障',
-  };
-  return statusMap[status] || '未知';
-}
-
-function getStatusColor(status: IDeviceStatus): string {
-  const colorMap: Record<IDeviceStatus, string> = {
-    online: '#4cd964',
-    offline: '#999',
-    maintenance: '#f0ad4e',
-    error: '#dd524d',
-  };
-  return colorMap[status] || '#999';
-}
 </script>
 
 <template>
   <view class="device-card" @click="$emit('click', device)">
     <view class="card-header">
       <text class="device-name">{{ device.name }}</text>
-      <view class="device-status" :style="{ backgroundColor: getStatusColor(device.status) }">
-        <text class="status-text">{{ getStatusText(device.status) }}</text>
+      <view class="device-status" :style="{ backgroundColor: getDeviceStatusColor(device.status) }">
+        <text class="status-text">{{ getDeviceStatusText(device.status) }}</text>
       </view>
     </view>
     <view class="card-body">
